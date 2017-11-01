@@ -79,7 +79,7 @@ for i in range(params.size - 2):
 # Setup the cluster one node at a time.
 for i in range(params.size):
     node = request.RawPC(rc_aliases[i])
-    node.hardware_type = hardware_type
+    node.hardware_type = params.hardware_type
     node.disk_image = urn.Image(cloudlab.Utah, "emulab-ops:%s" % params.image)
 
     if rc_aliases[i] == "rcnfs":

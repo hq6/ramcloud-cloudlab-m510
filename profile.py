@@ -84,7 +84,7 @@ for i in range(params.size):
 
     if rc_aliases[i] == "rcnfs":
         # Ask for a 200GB file system
-        localbs = node.Blockstore(name + "localbs", "/local/bs")
+        localbs = node.Blockstore(rc_aliases[i] + "localbs", "/local/bs")
         localbs.size = "200GB"
 
     # Add this node to the LAN.

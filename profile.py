@@ -82,10 +82,16 @@ for i in range(params.size):
     node.hardware_type = params.hardware_type
     node.disk_image = urn.Image(cloudlab.Utah, "emulab-ops:%s" % params.image)
 
+    node.addService(pg.Execute(shell="sh", 
+        command="sudo /local/repository/setup-all.sh"))
+
     if rc_aliases[i] == "rcnfs":
         # Ask for a 200GB file system
         localbs = node.Blockstore(rc_aliases[i] + "localbs", "/local/bs")
         localbs.size = "200GB"
+
+        node.addService(pg.Execute(shell="sh", 
+            command="sudo /local/repository/setup-rcnfs.sh"))
 
     # Add this node to the LAN.
     iface = node.addInterface("if1")

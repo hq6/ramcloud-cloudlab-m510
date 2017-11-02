@@ -19,7 +19,7 @@ cluster.
 
 import geni.urn as urn
 import geni.portal as portal
-import geni.rspec.pg as rspec
+import geni.rspec.pg as pg
 import geni.aggregate.cloudlab as cloudlab
 
 # Allows for general parameters like disk image to be passed in. Useful for

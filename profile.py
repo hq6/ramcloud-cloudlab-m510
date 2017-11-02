@@ -73,7 +73,7 @@ rclan.link_multiplexing = True
 # Setup node names so that existing RAMCloud scripts can be used on the
 # cluster.
 rc_aliases = ["rcmaster", "rcnfs"]
-for i in range(params.size - 2):
+for i in range(params.size):
     rc_aliases.append("rc%02d" % (i + 1))
 
 # Setup the cluster one node at a time.

@@ -77,17 +77,17 @@ for i in range(params.size):
     rc_aliases.append("rc%02d" % (i + 1))
 
 # Setup the cluster one node at a time.
-for i in range(params.size):
-    node = request.RawPC(rc_aliases[i])
+for hostname in rc_aliases:
+    node = request.RawPC(hostname)
     node.hardware_type = params.hardware_type
     node.disk_image = urn.Image(cloudlab.Utah, "emulab-ops:%s" % params.image)
 
     node.addService(pg.Execute(shell="sh", 
         command="sudo /local/repository/setup-all.sh"))
 
-    if rc_aliases[i] == "rcnfs":
+    if hostname == "rcnfs":
         # Ask for a 200GB file system
-        localbs = node.Blockstore(rc_aliases[i] + "localbs", "/local/bs")
+        localbs = node.Blockstore(hostname + "localbs", "/local/bs")
         localbs.size = "200GB"
 
         node.addService(pg.Execute(shell="sh", 

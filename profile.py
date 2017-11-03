@@ -17,10 +17,10 @@ The above steps should be sufficient to run ClusterPerf on the allocated
 cluster.
 """
 
-import geni.urn as urn
+import geni.aggregate.cloudlab as cloudlab
 import geni.portal as portal
 import geni.rspec.pg as pg
-import geni.aggregate.cloudlab as cloudlab
+import geni.urn as urn
 
 # Allows for general parameters like disk image to be passed in. Useful for
 # setting up the cloudlab dashboard for this profile.
@@ -49,7 +49,7 @@ pc.defineParameter("hardware_type", "Hardware Type",
 
 # Default the cluster size to 4 nodes (minimum requires to support a 
 # replication factor of 3). 
-pc.defineParameter("size", "Cluster Size",
+pc.defineParameter("num_rcnodes", "Cluster Size",
         portal.ParameterType.INTEGER, 4, [],
         "Specify the number of RAMCloud servers. For a replication factor " +\
         "of 3 the minimum number of RAMCloud servers is 4 (1 in-memory " +\
@@ -72,26 +72,25 @@ rclan.link_multiplexing = True
 
 # Setup node names so that existing RAMCloud scripts can be used on the
 # cluster.
-rc_aliases = ["rcmaster", "rcnfs"]
-for i in range(params.size):
-    rc_aliases.append("rc%02d" % (i + 1))
+hostnames = ["rcmaster", "rcnfs"]
+for i in range(params.num_rcnodes):
+    hostnames.append("rc%02d" % (i + 1))
+
+rcnfs_nfs_export_dir = "/local/nfs"
 
 # Setup the cluster one node at a time.
-for hostname in rc_aliases:
-    node = request.RawPC(hostname)
+for host in hostnames:
+    node = request.RawPC(host)
     node.hardware_type = params.hardware_type
     node.disk_image = urn.Image(cloudlab.Utah, "emulab-ops:%s" % params.image)
 
     node.addService(pg.Execute(shell="sh", 
-        command="sudo /local/repository/setup-all.sh"))
+        command="sudo /local/repository/setup.sh %s" % rcnfs_nfs_export_dir))
 
-    if hostname == "rcnfs":
-        # Ask for a 200GB file system
-        localbs = node.Blockstore(hostname + "localbs", "/local/bs")
-        localbs.size = "200GB"
-
-        node.addService(pg.Execute(shell="sh", 
-            command="sudo /local/repository/setup-rcnfs.sh"))
+    if host == "rcnfs":
+        # Ask for a 200GB file system to export via NFS
+        nfs_bs = node.Blockstore(host + "nfs_bs", rcnfs_nfs_export_dir)
+        nfs_bs.size = "200GB"
 
     # Add this node to the LAN.
     iface = node.addInterface("if1")

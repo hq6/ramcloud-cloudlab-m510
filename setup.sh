@@ -117,7 +117,7 @@ then
 	do
     hostname=${rcnames[$(( i - 1 ))]}
     ipaddress=`getent hosts $hostname | awk '{ print $1 }'`
-    tuplestr="($hostname, $ipaddress, $i)"
+    tuplestr="(\"$hostname\", \"$ipaddress\", $i)"
 		if [[ $i == ${#rcnames[@]} ]]
 		then
 			echo "$tuplestr]" >> localconfig.py

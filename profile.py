@@ -41,13 +41,14 @@ pc.defineParameter("hardware_type", "Hardware Type",
                    portal.ParameterType.NODETYPE,
                    hardware_types[0], hardware_types)
 
-# Default the cluster size to 4 nodes (minimum requires to support a 
-# replication factor of 3). 
+# Default the cluster size to 5 nodes (minimum requires to support a 
+# replication factor of 3 and an independent coordinator). 
 pc.defineParameter("num_rcnodes", "Cluster Size",
-        portal.ParameterType.INTEGER, 4, [],
+        portal.ParameterType.INTEGER, 5, [],
         "Specify the number of RAMCloud servers. For a replication factor " +\
-        "of 3 the minimum number of RAMCloud servers is 4 (1 in-memory " +\
-        "copy + 3 on-disk replicas). Note that the total " +\
+        "of 3 and without machine sharing enabled, the minimum number of " +\
+        "RAMCloud servers is 5 (1 master " +\
+        "+ 3 backups + 1 coordinator). Note that the total " +\
         "number of servers in the experiment will be this number + 2 (one " +\
         "additional server for rcmaster, and one for rcnfs). To check " +\
         "availability of nodes, visit " +\

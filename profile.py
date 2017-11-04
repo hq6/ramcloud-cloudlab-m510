@@ -25,7 +25,7 @@ pc = portal.Context()
 # The possible set of base disk-images that this cluster can be booted with.
 # The second field of every tupule is what is displayed on the cloudlab
 # dashboard.
-images = [ ("UBUNTU16-64-STD", "Ubuntu 16.04 (64-bit)") ]
+images = [ ("UBUNTU15-04-64-STD", "Ubuntu 15.04 (64-bit)") ]
 
 # The possible set of node-types this cluster can be configured with. Currently 
 # only m510 machines are supported.

@@ -66,7 +66,7 @@ then
   # Make the NFS exported file system readable and writeable by all hosts in the
   # system (/etc/exports is the access control list for NFS exported file
   # systems, see exports(5) for more information).
-	echo "$SHARED_HOME *(rw,sync,no_root_squash)" >> /etc/exports
+	echo "$NFS_EXPORT_DIR *(rw,sync,no_root_squash)" >> /etc/exports
 
   # Start the NFS service.
   /etc/init.d/nfs-kernel-server start

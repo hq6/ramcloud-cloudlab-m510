@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # === Parameters decided by profile.py ===
-# Partition that will be exported to NFS clients by the NFS server (rcnfs).
+# RCNFS partition that will be exported to clients by the NFS server (rcnfs).
 NFS_EXPORT_DIR=$1
+# RC server partition that will be used for RAMCloud backups.
+RC_BACKUP_DIR=$2
 
 # === Paarameters decided by this script. ===
 # Directory where the NFS partition will be mounted on NFS clients
@@ -88,7 +90,7 @@ else
 	echo "$rcnfs_ip:$NFS_EXPORT_DIR $SHARED_DIR nfs4 rw,sync,hard,intr,addr=`hostname -i` 0 0" >> /etc/fstab
 fi
 
-# Checkout and setup RAMCloud.
+# Checkout and setup RAMCloud on rcmaster
 if [ $(hostname --short) == "rcmaster" ]
 then
   cd $SHARED_DIR
@@ -101,6 +103,8 @@ then
 	cd scripts/
 	> localconfig.py
 
+  # Set the backup file location
+  echo "default_disk1 = \'-f /local/rcbackup/backup.log\'" >> localconfig.py
 	# First, collect rc server names and IPs in the cluster.
 	while read -r ip linkin linkout hostname
 	do 
@@ -129,4 +133,10 @@ then
   ## Make RAMCloud
   cd ../
   make -j8 DEBUG=no
+fi
+
+# Create backup.log file on each of the rc servers
+if [[ $(hostname --short) =~ ^rc[0-9][0-9]$ ]]
+then
+  > $RC_BACKUP_DIR/backup.log
 fi

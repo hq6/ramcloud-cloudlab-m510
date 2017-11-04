@@ -88,7 +88,8 @@ for host in hostnames:
     node.disk_image = urn.Image(cloudlab.Utah, "emulab-ops:%s" % params.image)
 
     node.addService(pg.Execute(shell="sh", 
-        command="sudo /local/repository/setup.sh %s" % rcnfs_nfs_export_dir))
+        command="sudo /local/repository/setup.sh %s %s" % 
+        rcnfs_nfs_export_dir, rcXX_backup_dir))
 
     if host == "rcnfs":
         # Ask for a 200GB file system to export via NFS

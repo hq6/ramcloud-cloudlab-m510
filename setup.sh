@@ -90,6 +90,17 @@ else
 	echo "$rcnfs_ip:$NFS_EXPORT_DIR $SHARED_DIR nfs4 rw,sync,hard,intr,addr=`hostname -i` 0 0" >> /etc/fstab
 fi
 
+# Make tmux start automatically when logging into rcmaster
+if [ $(hostname --short) == "rcmaster" ]
+then
+  cat >> etc/profile <<EOM
+if [[ -z "$TMUX" ]] && [ "$SSH_CONNECTION" != "" ]
+then
+  tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
+fi
+EOM
+fi
+
 # Checkout and setup RAMCloud on rcmaster
 if [ $(hostname --short) == "rcmaster" ]
 then

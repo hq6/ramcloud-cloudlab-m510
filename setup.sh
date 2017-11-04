@@ -104,7 +104,7 @@ then
 	> localconfig.py
 
   # Set the backup file location
-  echo "default_disk1 = \'-f /local/rcbackup/backup.log\'" >> localconfig.py
+  echo "default_disk1 = '-f /local/rcbackup/backup.log'" >> localconfig.py
 	# First, collect rc server names and IPs in the cluster.
 	while read -r ip linkin linkout hostname
 	do 

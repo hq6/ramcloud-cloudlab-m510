@@ -17,6 +17,8 @@ The above steps should be sufficient to run ClusterPerf on the allocated
 cluster.
 """
 
+import re
+
 import geni.aggregate.cloudlab as cloudlab
 import geni.portal as portal
 import geni.rspec.pg as pg
@@ -77,6 +79,7 @@ for i in range(params.num_rcnodes):
     hostnames.append("rc%02d" % (i + 1))
 
 rcnfs_nfs_export_dir = "/local/nfs"
+rcXX_backup_dir = "/local/rcbackup"
 
 # Setup the cluster one node at a time.
 for host in hostnames:
@@ -91,6 +94,12 @@ for host in hostnames:
         # Ask for a 200GB file system to export via NFS
         nfs_bs = node.Blockstore(host + "nfs_bs", rcnfs_nfs_export_dir)
         nfs_bs.size = "200GB"
+
+    pattern = re.compile("^rc[0-9][0-9]$")
+    if pattern.match(host):
+        # Ask for a 200GB file system for backups
+        backup_bs = node.Blockstore(host + "backup_bs", rcXX_backup_dir)
+        backup_bs.size = "200GB"
 
     # Add this node to the LAN.
     iface = node.addInterface("if1")

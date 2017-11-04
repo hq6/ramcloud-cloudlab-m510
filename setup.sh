@@ -31,32 +31,15 @@ apt-get --assume-yes install build-essential git-core doxygen libpcre3-dev \
         libboost-all-dev libgtest-dev libzookeeper-mt-dev zookeeper \
         libssl-dev default-jdk ccache
 
-# Collect rc server names and IPs in the cluster
-while read -r ip linkin linkout hostname
-do 
-  if [[ $hostname =~ ^rc[0-9]+$ ]] 
-  then
-    rcnames=("${rcnames[@]}" "$hostname") 
-    rcips=("${rcips[@]}" "$ip") 
-  fi 
-done < /etc/hosts
-
-IFS=$'\n' rcnames=($(sort <<<"${rcnames[*]}"))
-IFS=$'\n' rcips=($(sort <<<"${rcips[*]}"))
-unset IFS
-
 # Set some environment variables
-cat > /etc/profile <<EOM
+cat >> /etc/profile <<EOM
 
 export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-amd64
 export EDITOR=vim
-export RCIPS="${rcips[@]}"
-export RCNAMES="${rcnames[@]}"
-export HOSTNAMES="rcmaster rcnfs ${rcnames[@]}"
 EOM
 
 # Disable user prompting for connecting to unseen hosts.
-cat > /etc/ssh/ssh_config <<EOM
+cat >> /etc/ssh/ssh_config <<EOM
     StrictHostKeyChecking no
 EOM
 
@@ -83,9 +66,7 @@ then
   # Make the NFS exported file system readable and writeable by all hosts in the
   # system (/etc/exports is the access control list for NFS exported file
   # systems, see exports(5) for more information).
-  cat > /etc/exports <<EOM
-  $NFS_EXPORT_DIR *(rw,sync,no_root_squash)
-EOM
+	echo "$SHARED_HOME *(rw,sync,no_root_squash)" >> /etc/exports
 
   # Start the NFS service.
   /etc/init.d/nfs-kernel-server start
@@ -105,4 +86,47 @@ else
 	rcnfs_ip=`ssh rcnfs "hostname -i"`
 	mkdir $SHARED_DIR; mount -t nfs4 $rcnfs_ip:$NFS_EXPORT_DIR $SHARED_DIR
 	echo "$rcnfs_ip:$NFS_EXPORT_DIR $SHARED_DIR nfs4 rw,sync,hard,intr,addr=`hostname -i` 0 0" >> /etc/fstab
+fi
+
+# Checkout and setup RAMCloud.
+if [ $(hostname --short) == "rcmaster" ]
+then
+  cd $SHARED_DIR
+  git clone https://github.com/PlatformLab/RAMCloud.git
+  cd RAMCloud
+  git submodule update --init --recursive
+  ln -s ../../hooks/pre-commit .git/hooks/pre-commit
+
+	# Construct localconfig.py for this cluster setup.
+	cd scripts/
+	> localconfig.py
+
+	# First, collect rc server names and IPs in the cluster.
+	while read -r ip linkin linkout hostname
+	do 
+		if [[ $hostname =~ ^rc[0-9]+$ ]] 
+		then
+			rcnames=("${rcnames[@]}" "$hostname") 
+		fi 
+	done < /etc/hosts
+  IFS=$'\n' rcnames=($(sort <<<"${rcnames[*]}"))
+  unset IFS
+
+	echo -n "hosts = [" >> localconfig.py
+	for i in $(seq ${#rcnames[@]})
+	do
+    hostname=${rcnames[$(( i - 1 ))]}
+    ipaddress=`getent hosts $hostname | awk '{ print $1 }'`
+    tuplestr="($hostname, $ipaddress, $i)"
+		if [[ $i == ${#rcnames[@]} ]]
+		then
+			echo "$tuplestr]" >> localconfig.py
+    else 
+			echo -n "$tuplestr, " >> localconfig.py
+		fi
+	done
+
+  ## Make RAMCloud
+  cd ../
+  make -j8 DEBUG=no
 fi

@@ -88,12 +88,14 @@ for host in hostnames:
         # Ask for a 200GB file system to export via NFS
         nfs_bs = node.Blockstore(host + "nfs_bs", rcnfs_nfs_export_dir)
         nfs_bs.size = "200GB"
+        nfs_bs.placement = "SYSVOL"
 
     pattern = re.compile("^rc[0-9][0-9]$")
     if pattern.match(host):
         # Ask for a 200GB file system for backups
         backup_bs = node.Blockstore(host + "backup_bs", rcXX_backup_dir)
         backup_bs.size = "200GB"
+        backup_bs.placement = "SYSVOL"
 
     # Add this node to the LAN.
     iface = node.addInterface("if1")

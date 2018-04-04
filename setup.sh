@@ -16,7 +16,7 @@ KERNEL_RELEASE=`uname -r`
 # === Software dependencies that need to be installed. ===
 # Common utilities
 apt-get update
-apt-get --assume-yes install mosh vim tmux pdsh tree axel
+apt-get --assume-yes install mosh vim tmux pdsh tree axel ack-grep
 # NFS
 apt-get --assume-yes install nfs-kernel-server nfs-common
 # cpupower, hugepages, msr-tools (for rdmsr), i7z
@@ -85,18 +85,6 @@ else
 	rcnfs_ip=`ssh rcnfs "hostname -i"`
 	mkdir $SHARED_DIR; mount -t nfs4 $rcnfs_ip:$NFS_EXPORT_DIR $SHARED_DIR
 	echo "$rcnfs_ip:$NFS_EXPORT_DIR $SHARED_DIR nfs4 rw,sync,hard,intr,addr=`hostname -i` 0 0" >> /etc/fstab
-fi
-
-# Make tmux start automatically when logging into rcmaster
-if [ $(hostname --short) == "rcmaster" ]
-then
-  cat >> etc/profile <<EOM
-
-if [[ -z "\$TMUX" ]] && [ "\$SSH_CONNECTION" != "" ]
-then
-  tmux attach-session -t ssh_tmux || tmux new-session -s ssh_tmux
-fi
-EOM
 fi
 
 # Checkout and setup RAMCloud on rcmaster

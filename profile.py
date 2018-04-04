@@ -63,8 +63,8 @@ request = pc.makeRequestRSpec()
 # Create a local area network.
 rclan = request.LAN()
 rclan.best_effort = True
-rclan.vlan_tagging = True
-rclan.link_multiplexing = True
+rclan.vlan_tagging = False
+rclan.link_multiplexing = False
 
 # Setup node names so that existing RAMCloud scripts can be used on the
 # cluster.

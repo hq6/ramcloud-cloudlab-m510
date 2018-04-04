@@ -13,6 +13,22 @@ SHARED_DIR=/shome
 # Other variables
 KERNEL_RELEASE=`uname -r`
 
+# Avoid reboot loop
+if [ -f /local/setup_done ]
+then
+  # Post-restart configuration to do for rc machines.
+  if [[ $(hostname --short) =~ ^rc[0-9][0-9]$ ]]
+  then
+    echo -e "\n===== MOUNT HUGEPAGES ====="
+    # Mount hugepages, disable THP(Transparent Hugepages) daemon
+    # I believe this must be done only after setting the hugepagesz kernel
+    # parameter and rebooting.
+    hugeadm --create-mounts --thp-never
+  fi
+
+  exit 0
+fi
+
 # === Software dependencies that need to be installed. ===
 # Common utilities
 apt-get update
@@ -30,6 +46,17 @@ apt-get --assume-yes install build-essential git-core doxygen libpcre3-dev \
         protobuf-compiler libprotobuf-dev libcrypto++-dev libevent-dev \
         libboost-all-dev libgtest-dev libzookeeper-mt-dev zookeeper \
         libssl-dev default-jdk ccache
+
+# Mellanox OFED (Note: Reboot required after installing this).
+apt-get --assume-yes install tk8.4 chrpath graphviz tcl8.4 libgfortran3 dkms \
+tcl pkg-config gfortran curl libnl1 quilt dpatch swig tk python-libxml2
+
+echo -e "\n===== INSTALLING MELLANOX OFED ====="
+OS_VER="ubuntu`lsb_release -r | cut -d":" -f2 | xargs`"
+MLNX_OFED="MLNX_OFED_LINUX-3.4-1.0.0.0-$OS_VER-x86_64"
+axel -n 8 -q http://www.mellanox.com/downloads/ofed/MLNX_OFED-3.4-1.0.0.0/$MLNX_OFED.tgz
+tar xzf $MLNX_OFED.tgz
+./$MLNX_OFED/mlnxofedinstall --force --without-fw-update >> ./$MLNX_OFED/install.log
 
 # Set some environment variables
 cat >> /etc/profile <<EOM
@@ -87,9 +114,6 @@ else
 	echo "$rcnfs_ip:$NFS_EXPORT_DIR $SHARED_DIR nfs4 rw,sync,hard,intr,addr=`hostname -i` 0 0" >> /etc/fstab
 fi
 
-# Make the rcbackup directories globally writeable.
-chmod 777 /local/rcbackup
-
 # Checkout and setup RAMCloud on rcmaster
 if [ $(hostname --short) == "rcmaster" ]
 then
@@ -138,5 +162,32 @@ fi
 # Create backup.log file on each of the rc servers
 if [[ $(hostname --short) =~ ^rc[0-9][0-9]$ ]]
 then
-  > $RC_BACKUP_DIR/backup.log
+
+  # Make the rcbackup directories globally writeable.
+  chmod 777 $RC_BACKUP_DIR
+  touch $RC_BACKUP_DIR/backup.log
+  chmod 777 $RC_BACKUP_DIR/backup.log
+    cat >> /etc/security/limits.conf <<EOM
+* soft memlock unlimited
+* hard memlock unlimited
+EOM
+
+    echo -e "\n===== SET KERNEL BOOT PARAMETERS ====="
+    # Enable hugepage support for DPDK:
+    # http://dpdk.org/doc/guides/linux_gsg/sys_reqs.html
+    # The changes will take effects after reboot. m510 is not a NUMA machine.
+    # Reserve 1GB hugepages via kernel boot parameters
+    kernel_boot_params="default_hugepagesz=1G hugepagesz=1G hugepages=8"
+
+    # Update GRUB with our kernel boot parameters
+    sed -i "s/GRUB_CMDLINE_LINUX_DEFAULT=\"/GRUB_CMDLINE_LINUX_DEFAULT=\"$kernel_boot_params /" /etc/default/grub
+    update-grub
+
+    # Note: We will reboot the rc machines at the end of this script so that the
+    # kernel parameter changes can take effect.
+
+    touch /local/setup_done
+
+    echo -e "\n===== REBOOTING ====="
+    reboot
 fi

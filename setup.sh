@@ -123,9 +123,30 @@ then
   git submodule update --init --recursive
   ln -s ../../hooks/pre-commit .git/hooks/pre-commit
 
+   # Generate private makefile configuration
+  mkdir private
+  cat >>private/MakefragPrivateTop <<EOL
+DEBUG := no
+CCACHE := yes
+LINKER := gold
+DEBUG_OPT := yes
+GLIBCXX_USE_CXX11_ABI := yes
+DPDK := yes
+DPDK_DIR := dpdk
+DPDK_SHARED := no
+EOL
+## Make dpdk
+MLNX_DPDK=y scripts/dpdkBuild.sh
+
+  ## Make RAMCloud
+  cd ../
+
+  make -j8 DEBUG=no
+
 	# Construct localconfig.py for this cluster setup.
 	cd scripts/
 	> localconfig.py
+
 
   # Set the backup file location
   echo "default_disks = '-f /local/rcbackup/backup.log'" >> localconfig.py
@@ -144,7 +165,7 @@ then
 	for i in $(seq ${#rcnames[@]})
 	do
     hostname=${rcnames[$(( i - 1 ))]}
-    ipaddress=`getent hosts $hostname | awk '{ print $1 }'`
+    ipaddress=$(ssh $hostname 'hostname -i')
     tuplestr="(\"$hostname\", \"$ipaddress\", $i)"
 		if [[ $i == ${#rcnames[@]} ]]
 		then
@@ -154,9 +175,6 @@ then
 		fi
 	done
 
-  ## Make RAMCloud
-  cd ../
-  make -j8 DEBUG=no
 fi
 
 # Create backup.log file on each of the rc servers

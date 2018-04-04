@@ -139,8 +139,6 @@ EOL
 MLNX_DPDK=y scripts/dpdkBuild.sh
 
   ## Make RAMCloud
-  cd ../
-
   make -j8 DEBUG=no
 
 	# Construct localconfig.py for this cluster setup.

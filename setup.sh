@@ -87,6 +87,9 @@ else
 	echo "$rcnfs_ip:$NFS_EXPORT_DIR $SHARED_DIR nfs4 rw,sync,hard,intr,addr=`hostname -i` 0 0" >> /etc/fstab
 fi
 
+# Make the rcbackup directories globally writeable.
+chmod 777 /local/rcbackup
+
 # Checkout and setup RAMCloud on rcmaster
 if [ $(hostname --short) == "rcmaster" ]
 then
@@ -101,7 +104,7 @@ then
 	> localconfig.py
 
   # Set the backup file location
-  echo "default_disk1 = '-f /local/rcbackup/backup.log'" >> localconfig.py
+  echo "default_disks = '-f /local/rcbackup/backup.log'" >> localconfig.py
 	# First, collect rc server names and IPs in the cluster.
 	while read -r ip linkin linkout hostname
 	do 

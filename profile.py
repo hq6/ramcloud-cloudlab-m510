@@ -15,7 +15,7 @@ import re
 
 import geni.aggregate.cloudlab as cloudlab
 import geni.portal as portal
-import geni.rspec.pg as pg
+import geni.rspec.pg as RSpec
 import geni.urn as urn
 
 # Allows for general parameters like disk image to be passed in. Useful for
@@ -58,13 +58,11 @@ pc.defineParameter("num_rcnodes", "Cluster Size",
 params = pc.bindParameters()
 
 # Create a Request object to start building the RSpec.
-request = pc.makeRequestRSpec()
+request = RSpec.Request()
 
 # Create a local area network.
-rclan = request.LAN()
-rclan.best_effort = True
-rclan.vlan_tagging = False
-rclan.link_multiplexing = False
+rclan = RSpec.LAN()
+request.addResource(rclan)
 
 # Setup node names so that existing RAMCloud scripts can be used on the
 # cluster.
@@ -72,34 +70,24 @@ hostnames = ["rcmaster", "rcnfs"]
 for i in range(params.num_rcnodes):
     hostnames.append("rc%02d" % (i + 1))
 
-rcnfs_nfs_export_dir = "/local/nfs"
-rcXX_backup_dir = "/local/rcbackup"
-
 # Setup the cluster one node at a time.
 for host in hostnames:
-    node = request.RawPC(host)
+    node = RSpec.RawPC(host)
     node.hardware_type = params.hardware_type
     node.disk_image = urn.Image(cloudlab.Utah, "emulab-ops:%s" % params.image)
 
-    node.addService(pg.Execute(shell="sh", 
-        command="sudo /local/repository/setup.sh %s %s" % \
-        (rcnfs_nfs_export_dir, rcXX_backup_dir)))
-
     if host == "rcnfs":
-        # Ask for a 200GB file system to export via NFS
-        nfs_bs = node.Blockstore(host + "nfs_bs", rcnfs_nfs_export_dir)
+        # Ask for a 200GB file system mounted at /shome on rcnfs
+        nfs_bs = node.Blockstore("bs", "/shome")
         nfs_bs.size = "200GB"
-        nfs_bs.placement = "SYSVOL"
 
-    pattern = re.compile("^rc[0-9][0-9]$")
-    if pattern.match(host):
-        # Ask for a 200GB file system for backups
-        backup_bs = node.Blockstore(host + "backup_bs", rcXX_backup_dir)
-        backup_bs.size = "200GB"
-        backup_bs.placement = "SYSVOL"
+    node.addService(RSpec.Execute(shell="sh",
+        command="sudo /local/repository/setup.sh"))
+
+    request.addResource(node)
 
     # Add this node to the LAN.
-    iface = node.addInterface("if1")
+    iface = node.addInterface("eth0")
     rclan.addInterface(iface)
 
 # Generate the RSpec

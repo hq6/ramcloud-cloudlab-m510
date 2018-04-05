@@ -37,7 +37,7 @@ then
       # Mount NFS
       mount -a
     fi
-
+    chmod 777 /dev/nvme0n1
     exit 0
 fi
 

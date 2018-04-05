@@ -60,7 +60,7 @@ apt-get --assume-yes install build-essential git-core doxygen libpcre3-dev \
         libssl-dev default-jdk ccache
 
 # Setup password-less ssh between nodes
-for user in $(ls /users/)
+for user in $USERS; do
 do
     if [ "$user" = "root" ]; then
         ssh_dir=/root/.ssh

@@ -38,6 +38,13 @@ then
       mount -a
     fi
     chmod 777 /dev/nvme0n1
+
+    # Enable hugepage support (necessary for DPDK)
+    echo 1024 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+    mkdir -p /mnt/huge
+    mount -t hugetlbfs nodev /mnt/huge
+    chmod 777 /mnt/huge
+
     exit 0
 fi
 

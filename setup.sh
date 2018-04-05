@@ -60,7 +60,7 @@ apt-get --assume-yes install build-essential git-core doxygen libpcre3-dev \
         libssl-dev default-jdk ccache
 
 # Setup password-less ssh between nodes
-for user in $USERS; do
+for user in $USERS;
 do
     if [ "$user" = "root" ]; then
         ssh_dir=/root/.ssh
@@ -99,7 +99,7 @@ then
 
   # Generate a list of machines in the cluster; because Yilong does and it
   # might be needed in the scripts run after
-  cd $SHARED_HOME
+  pushd $SHARED_HOME
   > rc-hosts.txt
   let num_rcxx=$(geni-get manifest | grep -o "<node " | wc -l)-2
   for i in $(seq "$num_rcxx")
@@ -108,11 +108,7 @@ then
   done
   printf "rcmaster\n" >> rc-hosts.txt
   printf "rcnfs\n" >> rc-hosts.txt
-
-  # Only download Mellanox OFED on rcnfs
-  echo -e "\n===== INSTALLING MELLANOX OFED ====="
-  axel -n 8 -q http://www.mellanox.com/downloads/ofed/MLNX_OFED-3.4-1.0.0.0/$MLNX_OFED.tgz
-  tar xzf $MLNX_OFED.tgz
+  popd
 
   > /local/setup-nfs-done
 else
@@ -133,11 +129,18 @@ else
 
 fi
 
+# Download Mellanox OFED on all machines and install in parallel; avoiding waiting on RCNFS
+pushd /local
+echo -e "\n===== DOWNLOADING MELLANOX OFED ====="
+axel -n 8 -q http://www.mellanox.com/downloads/ofed/MLNX_OFED-3.4-1.0.0.0/$MLNX_OFED.tgz
+tar xzf $MLNX_OFED.tgz
 # Install Melanox on all machines (must be done before reboot)
-$SHARED_HOME/$MLNX_OFED/mlnxofedinstall --force --without-fw-update
+echo -e "\n===== INSTALLING MELLANOX OFED ====="
+$MLNX_OFED/mlnxofedinstall --force --without-fw-update
+popd
 
 # Remove ulimit on all machines
-    cat >> /etc/security/limits.conf <<EOM
+cat >> /etc/security/limits.conf <<EOM
 * soft memlock unlimited
 * hard memlock unlimited
 EOM

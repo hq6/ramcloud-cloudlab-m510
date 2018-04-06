@@ -81,6 +81,9 @@ for host in hostnames:
         nfs_bs = node.Blockstore("bs", "/shome")
         nfs_bs.size = "200GB"
 
+    node.addService(RSpec.Execute(shell="sh",
+        command="sudo /local/repository/setup.sh"))
+
     request.addResource(node)
 
     # Add this node to the LAN.

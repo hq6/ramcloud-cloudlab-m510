@@ -51,5 +51,5 @@ echo -e "\n===== INSTALLING MELLANOX OFED ====="
 $MLNX_OFED/mlnxofedinstall --force --without-fw-update
 popd
 
-# Reboot to let the configuration take effect
-reboot
+# Reboot to let the configuration take effect, but examine the state first.
+# reboot

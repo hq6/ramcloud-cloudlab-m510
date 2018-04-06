@@ -30,13 +30,16 @@ EOL
 done
 
 ################################################################################
+# Misc settings.
 # Change user login shell to Bash
 for user in $USERS; do
     chsh -s `which bash` $user
 done
-################################################################################
 # Update permissions on backup drive
 chmod 777 /dev/nvme0n1
+
+# Set CPU scaling governor to "performance"
+cpupower frequency-set -g performance
 
 ################################################################################
 # Setup NFS
@@ -51,7 +54,9 @@ then
   # Make the NFS exported file system readable and writeable by all hosts in the
   # system (/etc/exports is the access control list for NFS exported file
   # systems, see exports(5) for more information).
-  echo "$SHARED_HOME *(rw,sync,no_root_squash)" >> /etc/exports
+  if [[ -z "$(grep no_root_squash /etc/exports)" ]]; then
+      echo "$SHARED_HOME *(rw,sync,no_root_squash)" >> /etc/exports
+  fi
 
   # Avoid the need for a reboot.
   exportfs -a
@@ -83,8 +88,8 @@ else
   rcnfs_ip=`ssh rcnfs "hostname -i"`
   mkdir -p $SHARED_HOME; mount -t nfs4 $rcnfs_ip:$SHARED_HOME $SHARED_HOME
 
-  # TODO: Only add to fstab once
-  echo "$rcnfs_ip:$SHARED_HOME $SHARED_HOME nfs4 rw,sync,hard,intr,addr=`hostname -i` 0 0" >> /etc/fstab
-
+  # Only update fstab if it does not already include NFS.
+  if [[ -z "$(grep nfs4 /etc/fstab)" ]]; then
+      echo "$rcnfs_ip:$SHARED_HOME $SHARED_HOME nfs4 rw,sync,hard,intr,addr=`hostname -i` 0 0" >> /etc/fstab
+  fi
 fi
-

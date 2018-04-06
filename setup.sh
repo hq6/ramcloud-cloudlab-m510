@@ -49,6 +49,9 @@ then
   # systems, see exports(5) for more information).
   echo "$SHARED_HOME *(rw,sync,no_root_squash)" >> /etc/exports
 
+  # Avoid the need for a reboot.
+  exportfs -a
+
   # Start the NFS service.
   /etc/init.d/nfs-kernel-server start
 

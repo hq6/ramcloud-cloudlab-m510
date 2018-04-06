@@ -29,10 +29,14 @@ EOL
     chmod 644 $ssh_dir/config
 done
 
+################################################################################
 # Change user login shell to Bash
 for user in $USERS; do
     chsh -s `which bash` $user
 done
+################################################################################
+# Update permissions on backup drive
+chmod 777 /dev/nvme0n1
 
 ################################################################################
 # Setup NFS

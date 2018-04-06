@@ -113,7 +113,7 @@ then
   > /local/setup-nfs-done
 else
   # Update GRUB with our kernel boot parameters
-  sed -i "s/GRUB_CMDLINE_LINUX_DEFAULT=\"/GRUB_CMDLINE_LINUX_DEFAULT=\"$kernel_boot_params /" /etc/default/grub
+  sed -i "s/GRUB_CMDLINE_LINUX_DEFAULT=\"/GRUB_CMDLINE_LINUX_DEFAULT=\"$KERNEL_BOOT_PARAMS /" /etc/default/grub
   update-grub
 
   # Wait until nfs is properly set up

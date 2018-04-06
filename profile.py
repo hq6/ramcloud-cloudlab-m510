@@ -34,7 +34,7 @@ hardware_types = [ ("m510", "m510 (CloudLab Utah, Intel Xeon-D)") ]
 
 # Default the disk image to 64-bit Ubuntu 15.04
 pc.defineParameter("image", "Disk Image",
-        portal.ParameterType.IMAGE, images[0], images,
+        portal.ParameterType.IMAGE, images[1], images,
         "Specify the base disk image that all the nodes of the cluster " +\
         "should be booted with.")
 

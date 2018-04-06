@@ -50,6 +50,13 @@ request = RSpec.Request()
 
 # Create a local area network.
 rclan = RSpec.LAN()
+rclan.best_effort = True
+
+# It's not clear what these options do but they sound like they will make
+# performance less predictable if true; need to ask jde.
+rclan.vlan_tagging = False
+rclan.link_multiplexing = False
+
 request.addResource(rclan)
 
 # Setup node names so that existing RAMCloud scripts can be used on the

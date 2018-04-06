@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # This script should be run exactly once manually, and then disk image should
 # be snapshoted.
 ################################################################################

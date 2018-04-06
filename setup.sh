@@ -29,6 +29,11 @@ EOL
     chmod 644 $ssh_dir/config
 done
 
+# Change user login shell to Bash
+for user in $USERS; do
+    chsh -s `which bash` $user
+done
+
 ################################################################################
 # Setup NFS
 # If this server is the RCNFS server, then NFS export the local partition and

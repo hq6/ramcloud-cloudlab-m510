@@ -73,6 +73,7 @@ request.addResource(rclan)
 
 # Setup node names so that existing RAMCloud scripts can be used on the
 # cluster.
+rcxx_backup_dir = "/local/rcbackup"
 hostnames = ["rcmaster", "rcnfs"]
 for i in range(params.num_rcnodes):
     hostnames.append("rc%02d" % (i + 1))
@@ -87,6 +88,13 @@ for host in hostnames:
         # Ask for a 200GB file system mounted at /shome on rcnfs
         nfs_bs = node.Blockstore("bs", "/shome")
         nfs_bs.size = "200GB"
+
+    # Create a backup partition for RCXX.
+    pattern = re.compile("^rc[0-9][0-9]$")
+    if pattern.match(host):
+        # Ask for a 200GB file system for RAMCloud backups
+        backup_bs = node.Blockstore(host + "backup_bs", rcxx_backup_dir)
+        backup_bs.size = "200GB"
 
     node.addService(RSpec.Execute(shell="sh",
         command="sudo /local/repository/setup.sh"))

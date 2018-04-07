@@ -64,7 +64,7 @@ for user in $USERS; do
 done
 
 # Update permissions on backup drive
-chmod 777 /dev/nvme0n1
+chmod 777 /local/rcbackup
 
 # Set CPU scaling governor to "performance"
 cpupower frequency-set -g performance

@@ -36,7 +36,7 @@ for user in $USERS; do
     chsh -s `which bash` $user
 done
 # Update permissions on backup drive
-chmod 777 /dev/nvme0n1
+chmod 777 /local/rcbackup
 
 # Set CPU scaling governor to "performance"
 cpupower frequency-set -g performance

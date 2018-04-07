@@ -15,6 +15,6 @@ for i in range(1, num_rcXX + 1):
     hosts.append((hostname, ipAddr, i))
 
 print 'hosts = %s' % hosts
-print '''# The disk on m510 is a 256 (512?) GB NVMe flash storage.
-default_disks = '-f /dev/nvme0n1'
+print '''
+default_disks = '-f /local/rcbackup/backup.log'
 '''

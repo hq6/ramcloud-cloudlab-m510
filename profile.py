@@ -32,6 +32,12 @@ images = [ ("UBUNTU14-64-STD", "Ubuntu 14.04"),
 # only m510 machines are supported.
 hardware_types = [ ("m510", "m510 (CloudLab Utah, Intel Xeon-D)") ]
 
+# Default the disk image to 64-bit Ubuntu 15.04
+pc.defineParameter("image", "Disk Image",
+        portal.ParameterType.IMAGE, images[1], images,
+        "Specify the base disk image that all the nodes of the cluster " +\
+        "should be booted with.")
+
 pc.defineParameter("hardware_type", "Hardware Type",
                    portal.ParameterType.NODETYPE,
                    hardware_types[0], hardware_types)
@@ -75,7 +81,7 @@ for i in range(params.num_rcnodes):
 for host in hostnames:
     node = RSpec.RawPC(host)
     node.hardware_type = params.hardware_type
-    node.disk_image = "urn:publicid:IDN+utah.cloudlab.us+image+ramcloud-PG0:ramcloud-m510-dpdk-hugepage"
+    node.disk_image = urn.Image(cloudlab.Utah, "emulab-ops:%s" % params.image)
 
     if host == "rcnfs":
         # Ask for a 200GB file system mounted at /shome on rcnfs

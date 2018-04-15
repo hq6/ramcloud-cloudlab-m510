@@ -8,6 +8,10 @@ SHARED_HOME=/shome
 USERS="root `ls /users`"
 
 ################################################################################
+# Misc additional utilities
+apt-get install python-pip
+pip install docopt
+################################################################################
 # Setup password-less ssh between nodes
 for user in $USERS;
 do

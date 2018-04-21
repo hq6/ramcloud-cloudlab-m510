@@ -66,6 +66,9 @@ hostnames = ["rcmaster", "rcnfs"]
 for i in range(params.num_rcnodes):
     hostnames.append("rc%02d" % (i + 1))
 
+# Specialize for chassis 12
+nodeNames = ["ms12%02d" % x for x in range(1,46)]
+
 # Setup the cluster one node at a time.
 for host in hostnames:
     node = RSpec.RawPC(host)
@@ -83,6 +86,9 @@ for host in hostnames:
         # Ask for a 200GB file system for RAMCloud backups
         backup_bs = node.Blockstore(host + "backup_bs", rcxx_backup_dir)
         backup_bs.size = "200GB"
+
+        # Ask for one of the chassis machines
+        node.component_id = urn.Node(cloudlab.Utah, nodeNames.pop(0))
 
     node.addService(RSpec.Execute(shell="sh",
         command="sudo /local/repository/setup.sh"))

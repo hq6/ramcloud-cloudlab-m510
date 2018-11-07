@@ -33,7 +33,7 @@ pc.defineParameter("hardware_type", "Hardware Type",
 # Default the cluster size to 5 nodes (minimum requires to support a 
 # replication factor of 3 and an independent coordinator). 
 pc.defineParameter("num_rcnodes", "Cluster Size",
-        portal.ParameterType.INTEGER, 5, [],
+        portal.ParameterType.INTEGER, 1, [],
         "Specify the number of RAMCloud servers. For a replication factor " +\
         "of 3 and without machine sharing enabled, the minimum number of " +\
         "RAMCloud servers is 5 (1 master " +\
@@ -42,6 +42,13 @@ pc.defineParameter("num_rcnodes", "Cluster Size",
         "additional server for rcmaster, and one for rcnfs). To check " +\
         "availability of nodes, visit " +\
         "\"https://www.cloudlab.us/cluster-graphs.php\"")
+
+pc.defineParameter("node_names", "Machine Names CSV",
+        portal.ParameterType.STRING, "ms1201,ms1202,ms1203", [],
+        "A comma separated list of physical machines to use. " +
+        "This complicates the profile a bit but gives enough " +
+        "control to make all machines on the same chassis. " +
+        "Please specify enough machines to handle Cluster Size + 2")
 
 params = pc.bindParameters()
 
@@ -70,8 +77,7 @@ for i in range(params.num_rcnodes):
 hostnames.append("rcmaster")
 hostnames.append("rcnfs")
 
-# Specialize for chassis 12
-nodeNames = ["ms12%02d" % x for x in range(1,46)]
+nodeNames = params.node_names.split(",")
 
 # Setup the cluster one node at a time.
 for host in hostnames:

@@ -83,7 +83,7 @@ nodeNames = params.node_names.split(",")
 for host in hostnames:
     node = RSpec.RawPC(host)
     node.hardware_type = params.hardware_type
-    node.disk_image = "urn:publicid:IDN+utah.cloudlab.us+image+ramcloud-PG0:ramcloud-m510-dpdk-hugepage"
+    node.disk_image = "urn:publicid:IDN+emulab.net+image+emulab-ops//UBUNTU18-64-STD"
 
     if host == "rcnfs":
         # Ask for a 200GB file system mounted at /shome on rcnfs
